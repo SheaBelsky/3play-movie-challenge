@@ -66,13 +66,12 @@ export default async function handler(
   const parsedMovieId = parseInt(movieId);
 
   // Make request to the Movie API
-  // eslint-disable-next-line prefer-const
-  let [selectedMovie, randomPeople] = await Promise.all([
+  const [selectedMovie, randomPeople] = await Promise.all([
     getMovieActors(parsedMovieId),
     getRandomPeople(),
   ]);
 
-  // Get three random actual actors/actresses, and two random actors/actresses from another movie
+  // Get three random actors/actresses
   const onlyActorsArray = selectedMovie.filter(
     (actor) => actor.known_for_department.toLowerCase().trim() === "acting"
   );
@@ -88,6 +87,7 @@ export default async function handler(
     });
   }
 
+  // Find two random indices for actors
   const randomActorIndex1 = Math.floor(Math.random() * actingArrayLength);
   let randomActorIndex2 = Math.floor(Math.random() * actingArrayLength);
 
@@ -142,6 +142,7 @@ export default async function handler(
     ...formattedRandomPeople,
   ]);
 
+  // Return data
   res.statusCode = 200;
   return res.json({
     cast: JSON.stringify(shuffledCastMembers),

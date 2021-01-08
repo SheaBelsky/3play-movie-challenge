@@ -27,6 +27,8 @@ const createHandleSearch = (dispatch: Dispatch<Action>) => async (
 ) => {
   const requestedMovieTitle = event.target.value;
 
+  // If more than four characters have been typed, make a request to the backend
+  // to get movies matching this title
   if (requestedMovieTitle.length > 4) {
     dispatch({
       data: { isSearching: true, movieTitleSearch: requestedMovieTitle },
@@ -46,6 +48,7 @@ const createHandleSearch = (dispatch: Dispatch<Action>) => async (
         throw new Error(responseJson.error);
       }
 
+      // Parse the movies that come back and save them to state
       const { movies } = responseJson as { movies: string };
       const movieTitlesArray = JSON.parse(movies) as Array<MovieResult>;
       dispatch({
@@ -104,6 +107,8 @@ const createHandleAutocompleteChange = (dispatch: Dispatch<Action>) => async (
       throw new Error(responseJson.error);
     }
 
+    // Parse the actors that came back from the backend,
+    // and set them to state
     const { cast } = responseJson as { cast: string };
     const castArray = JSON.parse(cast) as Array<CastMember>;
     dispatch({
@@ -234,6 +239,7 @@ function Home() {
                   InputProps={{
                     ...params.InputProps,
                     endAdornment: (
+                      // Show a loading icon while movies are loading from the backend
                       <Fragment>
                         {state.isSearching ? (
                           <CircularProgress color="inherit" size={20} />
@@ -246,12 +252,14 @@ function Home() {
               )}
             />
 
+            {/* Show an error if one exists in state */}
             {state.error && (
               <Box mt={3}>
                 <Alert severity="error">{state.error}</Alert>
               </Box>
             )}
 
+            {/* Show a loading indicator while actors from the selected movie (or not...) are loading */}
             {state.isLoadingActors && (
               <Box mt={3}>
                 <CircularProgress /> Loading actors from{" "}
@@ -259,12 +267,13 @@ function Home() {
               </Box>
             )}
 
+            {/* If there are actors in state, render helpful text, then a card for each actor */}
             {!!state.movieActors?.length && (
               <Box mt={3}>
                 <Typography>
                   Three of the below actors are from{" "}
                   {state.movieTitleSelection.title}, and two of them are not.
-                  Check the ones you think are from{" "}
+                  Select the three actors that you think are from{" "}
                   {state.movieTitleSelection.title}, then click "Submit"!
                 </Typography>
                 <Box my={3}>
@@ -276,11 +285,17 @@ function Home() {
                     spacing={4}
                   >
                     {state.movieActors.map((actor) => {
+                      // This card is considered checked if the actor's ID exists in state
                       const isChecked = !!state.movieActorsSelection.find(
                         (currentActor) => currentActor.id === actor.id
                       );
+                      // This card is considered disabled if 3 or more (???) cards are checked,
+                      // and this card was not already checked
                       const isDisabled =
                         !isChecked && state.movieActorsSelection.length >= 3;
+                      // Only use a CardActionArea component if the card isn't disabled.
+                      // Otherwise, if this is disabled but CardActionArea is still rendered,
+                      // it gives the card a hover state that we don't want.
                       const ActionAreaWrapper = !isDisabled
                         ? CardActionArea
                         : Fragment;
@@ -291,6 +306,7 @@ function Home() {
                           style={{ display: "flex" }}
                           xs
                         >
+                          {/* Don't do anything if this card is disabled and it's been clicked on */}
                           <Card
                             className={classes.root}
                             onClick={
@@ -324,6 +340,8 @@ function Home() {
                   <Box display="flex" justifyContent="center" my={3}>
                     <Button
                       color="secondary"
+                      // Disable the submit button until 3 actors are selected,
+                      // and only when 3 are selected
                       disabled={state.movieActorsSelection.length !== 3}
                       onClick={handleSubmitGuesses}
                       size="large"
@@ -332,6 +350,7 @@ function Home() {
                       Submit Guesses
                     </Button>
                   </Box>
+                  {/* Show the player's score if a score exists in state */}
                   {!!state.score && (
                     <Typography align="center" paragraph>
                       {SCORE_TO_MESSAGE_MAP[state.score]}

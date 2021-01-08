@@ -32,6 +32,7 @@ export default async function handler(
     res.statusCode = 500;
     return res.json({ error: "The search could not be completed." });
   }
+  // Only return the results that actually have to go back to the frontend
   const movies = parsedResponse.results.map((result: Movie) => ({
     id: result.id,
     title: result.title,

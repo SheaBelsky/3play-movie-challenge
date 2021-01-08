@@ -1,3 +1,4 @@
+// Shared TypeScript types on movies for the frontend and backend
 export type ApiActorResponse = {
   id: number;
   cast: CastMember[];
